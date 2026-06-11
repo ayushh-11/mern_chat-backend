@@ -6,27 +6,27 @@ const path = require("path")
 const express = require("express");
 const cors = require("cors");
 const session = require("express-session");
+const MongoStore = require("connect-mongo");
 const authRoutes = require("./routes/authRoutes");
 const messageRoutes = require("./routes/messageRoutes");
 const userRoutes = require("./routes/userRoutes");
 const connection = require("./db/connection");
 
-const allowedOrigins = (process.env.ORIGIN || "http://localhost:5173")
-  .split(",")
-  .map((origin) => origin.trim())
-  .filter(Boolean);
-
 // Middleware
-app.set("trust proxy", 1);
 app.use(express.json()); // For parsing JSON
+const allowedOrigins = [
+  process.env.ORIGIN,
+  "http://localhost:5173"
+].filter(Boolean);
+
 app.use(
   cors({
-    origin: (origin, callback) => {
+    origin: function (origin, callback) {
       if (!origin || allowedOrigins.includes(origin)) {
-        return callback(null, true);
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
       }
-
-      return callback(new Error("Not allowed by CORS"));
     },
     credentials: true,
   })
@@ -34,9 +34,13 @@ app.use(
 // Session Configuration
 app.use(session({
     name: 'app.sid',
-    secret: "1234567890QWERTY", // Use environment variable
-    resave: true,
-    saveUninitialized: true,
+    secret: process.env.SESSION_SECRET || "1234567890QWERTY",
+    resave: false,
+    saveUninitialized: false,
+    store: MongoStore.create({
+        mongoUrl: process.env.connectionString,
+        collectionName: "sessions",
+    }),
     cookie: {
         sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
         secure: process.env.NODE_ENV === "production",

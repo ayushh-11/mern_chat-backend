@@ -11,21 +11,36 @@ const messageRoutes = require("./routes/messageRoutes");
 const userRoutes = require("./routes/userRoutes");
 const connection = require("./db/connection");
 
+const allowedOrigins = (process.env.ORIGIN || "http://localhost:5173")
+  .split(",")
+  .map((origin) => origin.trim())
+  .filter(Boolean);
+
 // Middleware
+app.set("trust proxy", 1);
 app.use(express.json()); // For parsing JSON
 app.use(
   cors({
-    origin: process.env.ORIGIN || "http://localhost:5173",
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+
+      return callback(new Error("Not allowed by CORS"));
+    },
     credentials: true,
   })
 );
-
 // Session Configuration
 app.use(session({
     name: 'app.sid',
     secret: "1234567890QWERTY", // Use environment variable
     resave: true,
     saveUninitialized: true,
+    cookie: {
+        sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+        secure: process.env.NODE_ENV === "production",
+    },
 }));
 
 // Routes

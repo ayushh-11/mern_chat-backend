@@ -4,11 +4,17 @@ const express = require ("express");
 
 const app = express();
 
+const allowedOrigins = (process.env.ORIGIN || "http://localhost:5173")
+	.split(",")
+	.map((origin) => origin.trim())
+	.filter(Boolean);
+
 const server = http.createServer(app);
 const io = new Server(server, {
 	cors: {
-		origin: [process.env.ORIGIN || "http://localhost:5173"],
+		origin: allowedOrigins,
 		methods: ["GET", "POST"],
+		credentials: true,
 	},
 });
 

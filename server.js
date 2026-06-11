@@ -6,18 +6,20 @@ const path = require("path")
 const express = require("express");
 const cors = require("cors");
 const session = require("express-session");
-const MongoStore = require("connect-mongo");
+const ConnectMongo = require("connect-mongo");
 const authRoutes = require("./routes/authRoutes");
 const messageRoutes = require("./routes/messageRoutes");
 const userRoutes = require("./routes/userRoutes");
 const connection = require("./db/connection");
+const MongoStore = ConnectMongo.default || ConnectMongo;
 
 // Middleware
+app.set("trust proxy", 1);
 app.use(express.json()); // For parsing JSON
-const allowedOrigins = [
-  process.env.ORIGIN,
-  "http://localhost:5173"
-].filter(Boolean);
+const allowedOrigins = (process.env.ORIGIN || "http://localhost:5173")
+  .split(",")
+  .map((origin) => origin.trim())
+  .filter(Boolean);
 
 app.use(
   cors({

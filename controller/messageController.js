@@ -5,7 +5,7 @@ const {getReceiverSocketId, io} = require("../socket/socket")
 
 const messageController = async (req, res) => {
     //convert ids to objecttype
-    const senderId = new mongoose.Types.ObjectId(req.session.sid);
+    const senderId = new mongoose.Types.ObjectId(req.userId);
     const receiverId = new mongoose.Types.ObjectId(req.params.rid);
     const message = req.body.msg;
 

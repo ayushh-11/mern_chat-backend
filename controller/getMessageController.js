@@ -3,7 +3,7 @@ const messageModel = require("../model/messageModel");
 
 const getMessageController = async (req, res) => {
     const { rid: receiverId } = req.params;
-    const senderId = req.session.sid;
+    const senderId = req.userId;
     try {
         let conversation = await conversationModel.findOne({
             participants: { $all: [senderId, receiverId] }
